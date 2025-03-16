@@ -23,9 +23,7 @@ This repository contains code and a report for a discrete‐time asset‐allocat
 - **uni_test.py**  
   A Python unittest script that verifies correctness of the environment, agent, and trainer. It checks transitions, utility calculations, Q-table updates, and so on. Run it via:
   ```bash
-  python -m unittest uni_test.py
-  
-  to ensure everything passes.
+  python uni_test.py
 
 ## Authors and Contributions
 
