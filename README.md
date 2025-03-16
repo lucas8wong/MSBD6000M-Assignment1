@@ -3,6 +3,18 @@
 
 This repository contains code and a report for a discrete‐time asset‐allocation problem solved via Q‐learning under CARA (negative exponential) utility.
 
+## Authors and Contributions
+
+**WONG Chong Ki (20978851)**  
+MSc in Big Data Technology, HKUST  
+Email: ckwongch@connect.ust.hk  
+
+**WENG Yanbing (21091234)**  
+MSc in Big Data Technology, HKUST  
+Email: ywengae@connect.ust.hk  
+
+Both authors contributed equally to the codebase and the report, each responsible for 50% of the overall work.
+
 ## Files Overview
 
 - **MSBD6000M_Assignment1.ipynb**  
@@ -24,18 +36,6 @@ This repository contains code and a report for a discrete‐time asset‐allocat
   A Python unittest script that verifies correctness of the environment, agent, and trainer. It checks transitions, utility calculations, Q-table updates, and so on. Run it via:
   ```bash
   python uni_test.py
-
-## Authors and Contributions
-
-**WONG Chong Ki (20978851)**  
-MSc in Big Data Technology, HKUST  
-Email: ckwongch@connect.ust.hk  
-
-**WENG Yanbing (21091234)**  
-MSc in Big Data Technology, HKUST  
-Email: ywengae@connect.ust.hk  
-
-Both authors contributed equally to the codebase and the report, each responsible for 50% of the overall work.
 
 ---
 
