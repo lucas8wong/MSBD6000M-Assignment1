@@ -41,7 +41,7 @@ class Environment:
             p (float): Probability of obtaining high return from risky asset.
             a_ret (float): High return of risky asset.
             b_ret (float): Low return of risky asset.
-            riskless_ret (float): Fixed return of riskless asset.
+            riskless_ret (float): Fixed return of risky asset.
             alpha (float): Parameter for the utility function.
             W_MAX (int): Maximum wealth.
             W_STEP (int): Discretization step for wealth.
@@ -89,7 +89,7 @@ class Environment:
 
     def utility(self, w):
         """
-        Calculate the negative exponential utility of wealth.
+        Calculate the exponential utility of wealth.
 
         Args:
             w (float): Wealth.
@@ -128,7 +128,7 @@ class Agent:
         decay_rate (float): Decay rate for epsilon.
     """
 
-    def __init__(self, env, alpha, gamma, epsilon_start, epsilon_end, decay_rate):
+    def __init__(self, env, alpha, gamma, epsilon_start, epsilon_end, decay_rate, INITIAL_WEALTH):
         """
         Initialize the agent with the given parameters.
 
@@ -146,6 +146,7 @@ class Agent:
         self.epsilon_start = epsilon_start  # Set the initial epsilon value
         self.epsilon_end = epsilon_end  # Set the final epsilon value
         self.decay_rate = decay_rate  # Set the decay rate for epsilon
+        self.INITIAL_WEALTH = INITIAL_WEALTH # Set the initial wealth
 
         # Initialize the Q-table
         self.max_act_count = max(len(self.env.action_candidates[w]) for w in self.env.all_wealth_levels)
@@ -168,6 +169,12 @@ class Agent:
                 idx_map = {x_val: i for i, x_val in enumerate(cand)}
                 action_index_map[t, w_idx] = idx_map  # Store the mapping in the action index map
         return action_index_map  # Return the action index map
+
+    def compute_epsilon(self, episode):
+        """
+        Compute the epsilon value for epsilon-greedy, decaying exponentially.
+        """
+        return self.epsilon_end + (self.epsilon_start - self.epsilon_end)*np.exp(-self.decay_rate*episode)
 
     def choose_action(self, t, w, eps):
         """
@@ -259,15 +266,14 @@ class Trainer:
         """
         for episode in range(self.num_episodes):  # Iterate over all episodes
             # Calculate the current epsilon value
-            epsilon = self.agent.epsilon_end + \
-                      (self.agent.epsilon_start - self.agent.epsilon_end) * np.exp(-self.agent.decay_rate * episode)
+            epsilon = self.agent.compute_epsilon(episode)
 
             # Copy the old Q-table to calculate the difference later
             Q_before = self.agent.Q.copy()
 
             # Initialize the initial state
             t = 0  # Set the initial time step to 0
-            w_current = INITIAL_WEALTH  # Set the initial wealth
+            w_current = self.agent.INITIAL_WEALTH  # Set the initial wealth
 
             while t < self.agent.env.T:  # Iterate over all time steps
                 # Choose an action using the epsilon-greedy policy
@@ -289,10 +295,19 @@ class Trainer:
             self.errors.append(diff_val)  # Append the error to the list
             self.final_wealths.append(w_current)  # Append the final wealth to the list
 
-            # Print the log every 100 episodes
+            # Print the log every 1000 episodes
             if (episode + 1) % 1000 == 0:
+                # Calculate average Q-diff over last 100 episodes
+                recent_qdiffs = self.errors[-100:] if len(self.errors)>=100 else self.errors
+                avg_qdiff_last100 = np.mean(recent_qdiffs)
+
+                # Calculate average final wealth over last 100 episodes
+                recent_wealth = self.final_wealths[-100:] if len(self.final_wealths)>=100 else self.final_wealths
+                avg_wealth_last100 = np.mean(recent_wealth)
+
                 print(f"Episode {episode+1}/{self.num_episodes} | eps={epsilon:.4f} "
-                      f"| Q-diff={diff_val:.4f} | FinalWealth={w_current}")
+                      f"| Avg Q-diff Last 100={avg_qdiff_last100:.4f} "
+                      f"| Avg Wealth Last 100={avg_wealth_last100:.2f}")
 
     def plot_results(self):
         """
@@ -307,27 +322,28 @@ class Trainer:
         if len(self.errors) > window_err:  # If there are enough errors to calculate the moving average
             # Calculate the moving average of the errors
             smoothed_err = [np.mean(self.errors[max(0, i - window_err + 1):i + 1]) for i in range(len(self.errors))]
-            plt.plot(smoothed_err, label=f"Err Moving Avg(window={window_err})", color="red", alpha=0.7)  # Plot the moving average
-        plt.xlabel("Episode")  # Set the x-axis label
-        plt.ylabel("Sum of |delta Q|")  # Set the y-axis label
-        plt.title("Training Error")  # Set the title
-        plt.legend()  # Add a legend
+            plt.plot(smoothed_err, label=f"Err Moving Avg(window={window_err})", color="red", alpha=0.7)
+        plt.xlabel("Episode")
+        plt.ylabel("Sum of |delta Q|")
+        plt.title("Training Error")
+        plt.legend()
 
         # Plot the final wealth
-        plt.subplot(1, 2, 2)  # Create a subplot for the final wealth
-        plt.plot(self.final_wealths, label="Final wealth per episode", alpha=0.6)  # Plot the final wealths
-        window_w = 100  # Set the window size for moving average
-        if len(self.final_wealths) > window_w:  # If there are enough final wealths to calculate the moving average
-            # Calculate the moving average of the final wealths
+        plt.subplot(1, 2, 2)
+        plt.plot(self.final_wealths, label="Final wealth per episode", alpha=0.6)
+        window_w = 500
+        if len(self.final_wealths) > window_w:
             smoothed = [np.mean(self.final_wealths[max(0, i - window_w + 1):i + 1]) for i in range(len(self.final_wealths))]
-            plt.plot(smoothed, label=f"Wealth Moving Avg(window={window_w})", color="red", alpha=0.7)  # Plot the moving average
-        plt.xlabel("Episode")  # Set the x-axis label
-        plt.ylabel("Final Wealth")  # Set the y-axis label
-        plt.title("Final Wealth over Episodes")  # Set the title
-        plt.legend()  # Add a legend
+            plt.plot(smoothed, label=f"Wealth MA(window={window_w})", color="red", alpha=0.7)
 
-        plt.tight_layout()  # Adjust the layout to prevent overlap
-        plt.show()  # Show the plot
+        plt.xlabel("Episode")
+        plt.ylabel("Final Wealth")
+        plt.title("Final Wealth over Episodes")
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+
 
 # =========== Code below remains the same, but we add new code for multiple scenarios ===========
 if __name__ == "__main__":
@@ -341,17 +357,17 @@ if __name__ == "__main__":
     T = 10  # Total number of stages
     alpha_utility = 0.001  # Parameter for the utility function
     INITIAL_WEALTH = 1000  # Initial wealth
-    W_MAX = 3000  # Maximum wealth
+    W_MAX = 10000  # Maximum wealth
     W_STEP = 50   # Discretization step for wealth
     ACTION_STEP = 50  # Discretization step for actions
 
-    num_episodes = 15000    # Number of training episodes
-    alpha = 0.01           # Learning rate
-    gamma = 1.0            # Discount factor
+    num_episodes = 30000    # Number of training episodes
+    alpha = 0.001           # Learning rate
+    gamma = 1.0             # Discount factor
 
-    epsilon_start = 0.2    # Initial epsilon value
-    epsilon_end = 0.01     # Final epsilon value
-    decay_rate = 0.005     # Decay rate for epsilon
+    epsilon_start = 0.2     # Initial epsilon value
+    epsilon_end = 0.0001    # Final epsilon value
+    decay_rate = 0.005      # Decay rate for epsilon
 
     # NEW: Define several scenarios for p, a_ret, b_ret, and riskless_ret
     scenarios = [
@@ -413,7 +429,8 @@ if __name__ == "__main__":
             gamma=gamma,
             epsilon_start=epsilon_start,
             epsilon_end=epsilon_end,
-            decay_rate=decay_rate
+            decay_rate=decay_rate,
+            INITIAL_WEALTH=INITIAL_WEALTH
         )
 
         # Initialize trainer
