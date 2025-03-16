@@ -37,12 +37,6 @@ Email: ywengae@connect.ust.hk
 
 Both authors contributed equally to the codebase and the report, each responsible for 50% of the overall work.
 
-## Key Highlights
-
-- **CARA Utility**: Negative‐exponential utility ensures a closed‐form solution exists, which the Q‐learning agent also approximates numerically.
-- **Multiple Market Scenarios**: Each with different \(\{p, a_{\text{ret}}, b_{\text{ret}}, r\}\) to assess policy convergence under varying risk/return conditions.
-- **Results**: In favorable (high‐probability/high‐return) cases, final wealth tends to saturate at or near the upper bound. In moderate scenarios, the agent still learns a policy that leverages net positive expectation.
-
 ---
 
 For more details, please refer to the **report PDF**.
