@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from asset_allocation_qlearning import Environment, Agent, Trainer  
+from msbd6000m_assignment1 import Environment, Agent, Trainer  
 
 
 class TestEnvironment(unittest.TestCase):
