@@ -37,24 +37,6 @@ Email: ywengae@connect.ust.hk
 
 Both authors contributed equally to the codebase and the report, each responsible for 50% of the overall work.
 
-## How to Run
-
-1. **Option 1: Python script**  
-   - Ensure you have Python 3, NumPy, Matplotlib installed.  
-   - Run `python msbd6000m_assignment1.py`.  
-   - The script will train an agent for multiple scenarios and display the convergence plots.
-
-2. **Option 2: Jupyter Notebook**  
-   - Open `MSBD6000M_Assignment1.ipynb` in Jupyter or any compatible environment.  
-   - Execute the cells sequentially to reproduce training logs and plots.
-
-3. **Option 3: Unit Tests**  
-   - Run the tests via:
-     ```bash
-     python -m unittest uni_test.py
-     ```
-   - This checks environment transitions, utility correctness, Q-table updates, etc., ensuring code integrity.
-
 ## Key Highlights
 
 - **CARA Utility**: Negative‐exponential utility ensures a closed‐form solution exists, which the Q‐learning agent also approximates numerically.
@@ -64,4 +46,3 @@ Both authors contributed equally to the codebase and the report, each responsibl
 ---
 
 For more details, please refer to the **report PDF**.
-```
